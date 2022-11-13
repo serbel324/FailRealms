@@ -61,11 +61,17 @@ public:
                 if (height < 0) {
                     double depth = std::max(0., 1 + height / 100);
                     gr->SetFillColor(TColor(70, 220, 250) * (0.1 + 0.9 * std::pow(depth * light, 3)));
-                } else if (height < BeachHeight) {
-                    TColor fillColor = TColor(250, 230, 150);
-                    gr->SetFillColor(fillColor * light);
                 } else {
-                    TColor fillColor = TColor(130, 200, 80);
+                    TColor fillColor;
+                    if (height > SnowHeight) {
+                        fillColor = TColor(250, 250, 250);
+                    } else if (height > RockHeight) {
+                        fillColor = TColor(140, 140, 140);
+                    } else if (height > GrassHeight) {
+                        fillColor = TColor(60, 160, 70);
+                    } else {
+                        fillColor= TColor(250, 230, 150);
+                    }
                     gr->SetFillColor(fillColor * light);
                 }
                 gr->DrawRect(TVec2f(x, y) * scale, TVec2f(scale, scale));
@@ -96,7 +102,10 @@ private:
     TVec3d SunLight;
     TVec3d MoonLight;
     double MoonIntensity = 0.1;
-    double BeachHeight = 1;
+
+    double GrassHeight = 1;
+    double RockHeight = 3;
+    double SnowHeight = 10;
 
     TVec2<ui32> Size;
     std::vector<std::vector<double>> HeightMap;

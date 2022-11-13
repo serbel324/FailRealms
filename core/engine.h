@@ -65,5 +65,6 @@ private:
 
 private:
 	TWorld World;
+	TVec2i WorldSize;
 	TCamera::SPtr MainCamera;
 };

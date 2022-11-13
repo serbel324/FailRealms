@@ -41,6 +41,7 @@ void TEngine::Config()
 {
 	/* default screen resolution is 800x800 */
 	WindowSize = TVec2<int>(1200, 1200);
+	WorldSize = {200, 200};
 	TickTime = 10;
 }
 
@@ -50,7 +51,7 @@ void TEngine::Init()
 	MainCamera = std::make_shared<TCamera>();
 	Gr->SetCamera(MainCamera);
 
-	World.Generate(TVec2(200, 200));
+	World.Generate(WorldSize);
 }
 
 void TEngine::Tick()
@@ -86,7 +87,7 @@ void TEngine::Events()
 			KeyPressed(e.key);
 			Control->KeyPressed(e.key);
 			if (e.key.code == sf::Keyboard::Space) {
-				World.Generate(TVec2(200, 200));
+				World.Generate(WorldSize);
 			}
 			break;
 		case sf::Event::KeyReleased:
