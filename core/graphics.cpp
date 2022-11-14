@@ -109,6 +109,7 @@ void TGraphics::DrawTexture(sf::Texture& tex, TVec2<float> pos, TVec2<float> siz
 
 	sprite.setPosition(pos.X - size.X / 2, pos.Y - size.Y / 2);
 	sprite.setScale(size.X / s.x, size.Y / s.y);
+
 	Window->draw(sprite);
 }
 

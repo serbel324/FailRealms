@@ -36,8 +36,9 @@ public:
         }
 
         HeightMap.assign(Size.Y + 1, std::vector<double>(Size.X + 1));
-        for (ui32 x = 0; x < Size.X; ++x) {
-            for (ui32 y = 0; y < Size.Y; ++y) {
+        NormalMap.assign(Size.Y, std::vector<TVec3d>(Size.X));
+        for (ui32 y = 0; y < Size.Y; ++y) {
+            for (ui32 x = 0; x < Size.X; ++x) {
                 TVec2d p(1. * x / Size.X, 1. * y / Size.Y);
                 double noise = MainNoise.Get(p);
                 double sign = NExtMath::Sign(noise);
@@ -47,22 +48,29 @@ public:
                 HeightMap[y][x] = (mainNoise + island) / 5;
             }
         }
+        for (ui32 y = 0; y < Size.Y; ++y) {
+            for (ui32 x = 0; x < Size.X; ++x) {
+                NormalMap[y][x] = GetNormal(x, y);
+            }
+        }
     }
 
-    void Render(TGraphics::SPtr gr, double scale) {
-        for (ui32 x = 0; x < Size.X; ++x) {
-            for (ui32 y = 0; y < Size.Y; ++y) {
+    void Render(TGraphics::SPtr gr, TVec2<ui32> windowSize) {
+        sf::Image imageTerrain;
+        imageTerrain.create(Size.X, Size.Y, sf::Color::Red);
+        for (ui32 y = 0; y < Size.Y; ++y) {
+            for (ui32 x = 0; x < Size.X; ++x) {
                 double height = HeightMap[y][x];
-                auto normal = GetNormal(x, y);
+                auto normal = NormalMap[y][x];
                 double sunLight = std::max(0., dot_prod(SunLight, normal));
                 double moonLight = std::max(0., dot_prod(MoonLight, normal));
                 double light = 0.1 + 0.9 * (sunLight + moonLight * MoonIntensity);
+                TColor fillColor;
 
                 if (height < 0) {
                     double depth = std::max(0., 1 + height / 100);
-                    gr->SetFillColor(TColor(70, 220, 250) * (0.1 + 0.9 * std::pow(depth * light, 3)));
+                    fillColor = TColor(70, 220, 250) * (0.1 + 0.9 * std::pow(depth * light, 3));
                 } else {
-                    TColor fillColor;
                     if (height > SnowHeight) {
                         fillColor = TColor(250, 250, 250);
                     } else if (height > RockHeight) {
@@ -70,13 +78,18 @@ public:
                     } else if (height > GrassHeight) {
                         fillColor = TColor(60, 160, 70);
                     } else {
-                        fillColor= TColor(250, 230, 150);
+                        fillColor = TColor(250, 230, 150);
                     }
-                    gr->SetFillColor(fillColor * light);
+                    fillColor = fillColor * light;
                 }
-                gr->DrawRect(TVec2f(x, y) * scale, TVec2f(scale, scale));
+                imageTerrain.setPixel(x, y, sf::Color(fillColor.R, fillColor.G, fillColor.B));
             }
         }
+        sf::Texture tex;
+        tex.create(Size.X, Size.Y);
+        tex.update(imageTerrain);
+
+        gr->DrawTexture(tex, windowSize * 0.5, windowSize);
     }
 
     void Tick(double dtime) {
@@ -101,7 +114,7 @@ private:
     double Time = 0;
     TVec3d SunLight;
     TVec3d MoonLight;
-    double MoonIntensity = 0.1;
+    double MoonIntensity = 0.3;
 
     double GrassHeight = 1;
     double RockHeight = 3;
@@ -109,6 +122,7 @@ private:
 
     TVec2<ui32> Size;
     std::vector<std::vector<double>> HeightMap;
+    std::vector<std::vector<TVec3d>> NormalMap;
     TPerlinNoise MainNoise;
     TPerlinNoise MountainNoise;
 };

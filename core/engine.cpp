@@ -41,7 +41,7 @@ void TEngine::Config()
 {
 	/* default screen resolution is 800x800 */
 	WindowSize = TVec2<int>(1200, 1200);
-	WorldSize = {200, 200};
+	WorldSize = {600, 600};
 	TickTime = 10;
 }
 
@@ -67,7 +67,7 @@ void TEngine::Render()
 	Gr->Fill();
 	Gr->UpdateViewport();
 
-	World.Render(Gr, 6);
+	World.Render(Gr, WindowSize);
 
 	Gr->Present();
 }
