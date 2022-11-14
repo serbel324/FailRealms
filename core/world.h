@@ -16,8 +16,9 @@ class TWorld {
 public:
     TWorld() = default;
 
-    void Generate(TVec2<ui32> size) {
+    void Generate(TVec2<ui32> size, double dayDuration) {
         Size = size;
+        DayDuration = dayDuration;
         {
             ui32 worldDepth = 8;
             ui32 baseGridSize = 4;
@@ -62,14 +63,16 @@ public:
             for (ui32 x = 0; x < Size.X; ++x) {
                 double height = HeightMap[y][x];
                 auto normal = NormalMap[y][x];
+                TColor fillColor;
                 double sunLight = std::max(0., dot_prod(SunLight, normal));
                 double moonLight = std::max(0., dot_prod(MoonLight, normal));
-                double light = 0.1 + 0.9 * (sunLight + moonLight * MoonIntensity);
-                TColor fillColor;
+                double light = StarBrightness + sunLight * SunBrightness + moonLight * MoonBrightness;
 
                 if (height < 0) {
                     double depth = std::max(0., 1 + height / 100);
-                    fillColor = TColor(70, 220, 250) * (0.1 + 0.9 * std::pow(depth * light, 3));
+                    double sunLight1 = std::max(0., dot_prod(SunLight, TVec3d(0, 0, 1)));
+                    double light1 = StarBrightness + sunLight1 * SunBrightness;
+                    fillColor = TColor(70, 220, 250) * light * light1 * depth;
                 } else {
                     if (height > SnowHeight) {
                         fillColor = TColor(250, 250, 250);
@@ -94,7 +97,10 @@ public:
 
     void Tick(double dtime) {
         Time += dtime;
-        double a = Time / 3000;
+        if (Time >= DayDuration) {
+            Time -= DayDuration;
+        }
+        double a = (Time / DayDuration + 0.5) * 2 * NExtMath::PI;
         SunLight = TVec3d(0, std::sin(a), std::cos(a));
         MoonLight = TVec3d(0, std::sin(a + NExtMath::PI), std::cos(a + NExtMath::PI));
     }
@@ -112,9 +118,14 @@ private:
     }
 
     double Time = 0;
+    double DayDuration;
+
     TVec3d SunLight;
     TVec3d MoonLight;
-    double MoonIntensity = 0.3;
+
+    double SunBrightness = 1.0;
+    double MoonBrightness = 0.0;
+    double StarBrightness = 0.0;
 
     double GrassHeight = 1;
     double RockHeight = 3;

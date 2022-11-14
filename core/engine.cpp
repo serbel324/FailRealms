@@ -17,9 +17,10 @@ TEngine::TEngine()
 
 	Init();
 
+	double dt;
 	while (Window->isOpen())
 	{
-		MainLoop();
+		dt = MainLoop(dt);
 	}
 
 	Close();
@@ -41,8 +42,10 @@ void TEngine::Config()
 {
 	/* default screen resolution is 800x800 */
 	WindowSize = TVec2<int>(1200, 1200);
-	WorldSize = {600, 600};
+	WorldSize = {500, 500};
 	TickTime = 10;
+	Time = 0;
+	DayDuration = 4000;
 }
 
 void TEngine::Init()
@@ -51,14 +54,19 @@ void TEngine::Init()
 	MainCamera = std::make_shared<TCamera>();
 	Gr->SetCamera(MainCamera);
 
-	World.Generate(WorldSize);
+	World.Generate(WorldSize, DayDuration);
 }
 
-void TEngine::Tick()
+void TEngine::Tick(double dt)
 {
 	/// World.Generate(TVec2(800, 800));
 
-	World.Tick(200);
+	World.Tick(dt);
+	Time += dt;
+	if (Time >= DayDuration) {
+		Time -= DayDuration;
+		World.Generate(WorldSize, DayDuration);
+	}
 }
 
 void TEngine::Render()
@@ -87,7 +95,7 @@ void TEngine::Events()
 			KeyPressed(e.key);
 			Control->KeyPressed(e.key);
 			if (e.key.code == sf::Keyboard::Space) {
-				World.Generate(WorldSize);
+				World.Generate(WorldSize, DayDuration);
 			}
 			break;
 		case sf::Event::KeyReleased:
@@ -120,20 +128,22 @@ void TEngine::MousePressed(sf::Event::MouseButtonEvent mouse)
 {
 }
 
-void TEngine::MainLoop()
+double TEngine::MainLoop(double dt)
 {
 	sf::Clock clock;
 
 	Events();
-	Tick();
+	Tick(dt);
 	Render();
 
 	sf::Time t = clock.getElapsedTime();
-
-	if (t.asMilliseconds() < TickTime)
+	dt = t.asMilliseconds();
+	if (dt < TickTime)
 	{
 		sf::sleep(sf::milliseconds(TickTime - t.asMilliseconds()));
+		dt = TickTime;
 	}
+	return dt;
 }
 
 void TEngine::Close()

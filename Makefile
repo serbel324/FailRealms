@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -Wall -std=c++17
+CFLAGS=-c -Wall -Werror -std=c++17
 LDFLAGS=
 EXECUTABLE=game
 

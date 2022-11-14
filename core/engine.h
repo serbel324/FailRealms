@@ -46,7 +46,7 @@ private:
 	void Init();
 
 	/* update */
-	void Tick();
+	void Tick(double dt);
 	
 	/* draw */
 	void Render();
@@ -58,7 +58,7 @@ private:
 	void MousePressed(sf::Event::MouseButtonEvent mouse);
 
 	/* main loop iteration */
-	void MainLoop();
+	double MainLoop(double dt);
 
 	/* after main Window is closed */
 	void Close();
@@ -66,5 +66,7 @@ private:
 private:
 	TWorld World;
 	TVec2i WorldSize;
+    double DayDuration;
+	double Time;
 	TCamera::SPtr MainCamera;
 };
