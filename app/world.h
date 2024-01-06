@@ -13,6 +13,7 @@
 #include <core/graphics.h>
 
 using namespace REngine;
+using ExtMath::Bounds;
 
 class World {
 public:
@@ -21,10 +22,10 @@ public:
         struct Biome {
             std::string name = "TabulaRasa";
             // Terrain
-            double maxHeight = 1e5;
-            double minHeight = -1e5;
+            Bounds<double> heightBounds{-10000, 10000};
+            Bounds<double> slopeBounds{0, 90};
 
-            double maxSlope = 1;
+            bool water = false;
 
             // Surface
             double surfaceAlbedo = 1;
@@ -39,13 +40,12 @@ public:
         };
     
         double dayDuration;
+        Vec2u worldSize = Vec2u{100, 100};
 
-        Vec2i worldSize = Vec2i{100, 100};
+        PerlinNoise::Settings heightNoiseSettings;
+        PerlinNoise::Settings temperatureNoiseSettings;
 
-        PerlinNoise::Settings mainNoiseSettings;
-
-        // std::vector<LightSource> lightSources;
-
+        std::vector<LightSource> lightSources;
         std::vector<Biome> biomes;
     };
 
@@ -53,7 +53,7 @@ public:
     World();
 
     void Generate(Settings settings);
-    void Render(Graphics* gr, Vec2<uint32_t> windowSize);
+    void Render(Graphics* gr, Vec2u windowSize);
     void Tick(double dtime);
 
 private:
@@ -80,14 +80,13 @@ private:
     double _moonBrightness = 0.2;
     double _starBrightness = 0.1;
 
-    double _grassHeight = 1;
-    double _rockHeight = 3;
-    double _snowHeight = 10;
-
-    Vec2<uint32_t> _size;
+    Vec2u _size;
 
     std::vector<std::vector<double>> _heightMap;
+    std::vector<std::vector<double>> _temperatureMap;
     std::vector<std::vector<Vec3d>> _normalMap;
     std::vector<std::vector<uint32_t>> _biomeMap;
-    PerlinNoise _mainNoise;
+
+    PerlinNoise _heightNoise;
+    PerlinNoise _temperatureNoise;
 };

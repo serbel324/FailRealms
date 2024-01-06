@@ -12,14 +12,15 @@ public:
         uint32_t depth = 5;
         uint32_t baseGridResolution = 8;
         std::function<double(uint32_t)> amplitudeGenerator = [](uint32_t) { return 1; };
+        std::function<double(double)> transformerFunction = [](double x) { return x; };
     };
 
 private:
     struct PerlinLayer {
         std::vector<std::vector<Vec2d>> gradients;
-        Vec2<uint32_t> gridSize;
+        Vec2u gridSize;
 
-        void Generate(Vec2<uint32_t> size) {
+        void Generate(Vec2u size) {
             gridSize = size;
             gradients.assign(size.y + 2, std::vector<Vec2d>(size.x + 2, Vec2d(0, 0)));
             for (uint32_t y = 0; y < size.y + 1; ++y) {

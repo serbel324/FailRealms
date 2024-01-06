@@ -10,9 +10,12 @@ void PerlinNoise::Generate(Settings settings) {
 }
 
 double PerlinNoise::operator()(Vec2<double> p) {
-    double res = 0;
+    double v = 0;
+    double ampl_sum = 0;
     for (uint32_t i = 0; i < _settings.depth; ++i) {
-        res += _layers[i](p * _settings.baseGridResolution * (1 << i)) * _settings.amplitudeGenerator(i);
+        double a = _settings.amplitudeGenerator(i);
+        v += _layers[i](p * _settings.baseGridResolution * (1 << i)) * a;
+        ampl_sum += a;
     }
-    return res;
+    return _settings.transformerFunction(v / ampl_sum);
 }

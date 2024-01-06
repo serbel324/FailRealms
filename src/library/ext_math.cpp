@@ -100,4 +100,8 @@ double SmootherstepSquare(double p00, double p10, double p01, double p11, Vec2<d
 	);
 }
 
+double ModuleStepFunction(double x) {
+    return x / (1 + std::abs(x));
+}
+
 }

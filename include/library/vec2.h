@@ -77,28 +77,29 @@ struct Vec2
 };
 
 using Vec2i = Vec2<int>;
+using Vec2u = Vec2<uint32_t>;
 using Vec2f = Vec2<float>;
 using Vec2d = Vec2<double>;
 
  /* returns scalar product */
 template <typename T, typename F>
-T dot_prod(Vec2<T, F> l, Vec2<T, F> r);
+T dot_prod(const Vec2<T, F>& l, const Vec2<T, F>& r);
 
 /* returns vector product = |x|*|y|*sin(angle(x,y)) */
 template <typename T, typename F>
-T cross_prod(Vec2<T, F> l, Vec2<T, F> r);
+T cross_prod(const Vec2<T, F>& l, const Vec2<T, F>& r);
 
 /* returns distance between point a and b */
 template <typename T, typename F>
-F dist(Vec2<T, F> a, Vec2<T, F> b);
+F dist(const Vec2<T, F>& a, const Vec2<T, F>& b);
 
 /* returns angle between vectors a and b in range[-pi, pi] */
 template <typename T, typename F>
-F angle(Vec2<T, F> a, Vec2<T, F> b);
+F angle(const Vec2<T, F>& a, const Vec2<T, F>& b);
 
 /* returns true if a and b are collinear */
 template <typename T, typename F>
-bool check_parallel(Vec2<T, F> a, Vec2<T, F> b);
+bool check_parallel(const Vec2<T, F>& a, const Vec2<T, F>& b);
 
 
 /* ------------------ I/O operators ------------------ */
@@ -106,7 +107,7 @@ template <typename T, typename F>
 std::istream& operator>>(std::istream& in, Vec2<T, F>& v);
 
 template <typename T, typename F>
-std::ostream& operator<<(std::ostream& out, const Vec2<T, F>& v);\
+std::ostream& operator<<(std::ostream& out, const Vec2<T, F>& v);
 
 /* =========================================================================== */
 /* =============================== DEFINITIONS =============================== */
@@ -333,31 +334,31 @@ std::ostream& operator<<(std::ostream& out, const Vec2<T, F>& v)
 }
 
 template<typename T, typename F>
-T dot_prod(Vec2<T, F> l, Vec2<T, F> r)
+T dot_prod(const Vec2<T, F>& l, const Vec2<T, F>& r)
 {
     return l.x * r.x + l.y * r.y;
 }
 
 template<typename T, typename F>
-T cross_prod(Vec2<T, F> l, Vec2<T, F> r)
+T cross_prod(const Vec2<T, F>& l, const Vec2<T, F>& r)
 {
     return l.x * r.y - l.y * r.x;
 }
 
 template<typename T, typename F>
-F dist(Vec2<T, F> a, Vec2<T, F> b)
+F dist(const Vec2<T, F>& a, const Vec2<T, F>& b)
 {
     return (a - b).abs();
 }
 
 template<typename T, typename F>
-F angle(Vec2<T, F> a, Vec2<T, F> b)
+F angle(const Vec2<T, F>& a, const Vec2<T, F>& b)
 {
     return std::atan2(cross_prod(a, b), dot_prod(a, b));
 }
 
 template<typename T, typename F>
-bool check_parallel(Vec2<T, F> a, Vec2<T, F> b)
+bool check_parallel(const Vec2<T, F>& a, const Vec2<T, F>& b)
 {
     double aabs = a.abs();
     double babs = b.abs();

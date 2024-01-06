@@ -3,8 +3,9 @@
 #include <library/vec2.h>
 
 #include "world.h"
+#include "parse_config.h"
 
-#include <iostream>
+#include <fstream>
 
 using namespace REngine;
 
@@ -25,12 +26,9 @@ public:
 
     void Initialize() override {
         std::cout << "Init" << std::endl;
-        _world.Generate({
-            .dayDuration = 4000,
-            .worldSize = _worldSize,
-            .mainNoiseSettings = PerlinNoise::Settings{},
-            .biomes = { World::Settings::Biome{} }
-        });
+        std::ifstream f("world_settings.json");
+        World::Settings worldSettings = ParseConfig(nlohmann::json::parse(f));
+        _world.Generate(worldSettings);
     }
 
     bool Update(float elapsedMs) override {

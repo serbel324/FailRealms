@@ -80,19 +80,23 @@ using Vec3d = Vec3<double>;
 
  /* returns scalar product */
 template <typename T, typename F>
-T dot_prod(Vec3<T, F> l, Vec3<T, F> r);
+T dot_prod(const Vec3<T, F>& l, const Vec3<T, F>& r);
 
  /* returns vector product */
 template <typename T, typename F>
-Vec3<T, F> cross_prod(Vec3<T, F> l, Vec3<T, F> r);
+Vec3<T, F> cross_prod(const Vec3<T, F>& l, const Vec3<T, F>& r);
 
-/* returns distance between point a and b */
+/* returns distance between points a and b */
 template <typename T, typename F>
-F dist(Vec3<T, F> a, Vec3<T, F> b);
+F dist(const Vec3<T, F>& a, const Vec3<T, F>& b);
+
+/* returns angle (rad) between vectors a and b */
+template <typename T, typename F>
+F angle(const Vec3<T, F>& a, const Vec3<T, F>& b);
 
 /* returns true if a and b are collinear */
 template <typename T, typename F>
-bool check_parallel(Vec3<T, F> a, Vec3<T, F> b);
+bool check_parallel(const Vec3<T, F>& a, const Vec3<T, F>& b);
 
 
 /* ------------------ I/O operators ------------------ */
@@ -328,13 +332,13 @@ std::ostream& operator<<(std::ostream& out, const Vec3<T, F>& v)
 }
 
 template<typename T, typename F>
-T dot_prod(Vec3<T, F> l, Vec3<T, F> r)
+T dot_prod(const Vec3<T, F>& l, const Vec3<T, F>& r)
 {
     return l.x * r.x + l.y * r.y + l.z * r.z;
 }
 
 template<typename T, typename F>
-Vec3<T, F> cross_prod(Vec3<T, F> l, Vec3<T, F> r)
+Vec3<T, F> cross_prod(const Vec3<T, F>& l, const Vec3<T, F>& r)
 {
     return Vec3<T, F>{
         l.y * r.z - l.z * r.y,
@@ -344,13 +348,24 @@ Vec3<T, F> cross_prod(Vec3<T, F> l, Vec3<T, F> r)
 }
 
 template<typename T, typename F>
-F dist(Vec3<T, F> a, Vec3<T, F> b)
+F dist(const Vec3<T, F>& a, const Vec3<T, F>& b)
 {
     return (a - b).magnitude();
 }
 
 template<typename T, typename F>
-bool check_parallel(Vec3<T, F> a, Vec3<T, F> b)
+F angle(const Vec3<T, F>& a, const Vec3<T, F>& b)
+{
+    double amag = a.magnitude();
+    double bmag = b.magnitude();
+    if (amag < Vec3<T, F>::EPS || bmag < Vec3<T, F>::EPS) {
+        return 0;
+    }
+    return std::acos(dot_prod(a, b) / a.magnitude() / b.magnitude());
+}
+
+template<typename T, typename F>
+bool check_parallel(const Vec3<T, F>& a, const Vec3<T, F>& b)
 {
     double amag = a.magnitude();
     double bmag = b.magnitude();

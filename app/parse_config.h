@@ -1,8 +1,8 @@
-#include <app/world.h>
+#include "world.h"
 
 #include <nlohmann/json.hpp>
 
-using TJson = nlohmann::json;
-using TConfig = World::Settings;
+using Json = nlohmann::json;
+using Config = World::Settings;
 
-TConfig ParseConfig(TJson json);
+Config ParseConfig(const Json& json);

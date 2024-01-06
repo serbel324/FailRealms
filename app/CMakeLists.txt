@@ -7,6 +7,7 @@ project(App)
 
 set(SOURCES
     main.cpp
+    parse_config.cpp
     perlin.cpp
     world.cpp
 )
