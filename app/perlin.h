@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <vector>
-
+#include <functional>
 #include <library/vec2.h>
 #include <library/ext_math.h>
 

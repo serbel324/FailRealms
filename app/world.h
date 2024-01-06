@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <vector>
-
+#include <cassert>
 #include <library/vec2.h>
 #include <library/vec3.h>
 #include <library/ext_math.h>
