@@ -1,8 +1,9 @@
-# Render Engine
+# Fail Realms
 ### Quickstart
-Just look for sample app lol.
-
-If you have questions and/or proposals, feel free to email me at serg.belyakov.spam@yandex.ru
-
-### Acknowledgements
-Powered by [SFML](https://github.com/SFML/SFML)
+```(bash)
+mkdir build
+cmake . -B build
+cp world_settings.json build/app/world_settings.json
+cd build/app
+make && ./App
+```

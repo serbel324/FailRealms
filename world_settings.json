@@ -1,0 +1,83 @@
+{
+    "day_duration": 10000,
+    "world_size": { "width": 400, "height": 400 },
+    "height_noise": {
+        "depth": 7,
+        "base_grid_resolution": 10,
+        "transformer_function": {
+            "magnitude": 15,
+            "variable_amplifier": 3,
+            "base": 2,
+            "polynomial": {
+                "powers": [1, 3, 5],
+                "coefficients": [0.3, -2, 15]
+            }
+        }
+    },
+    "temperature_noise": {
+        "depth": 1,
+        "base_grid_resolution": 4,
+        "transformer_function": {
+            "magnitude": 40,
+            "base": 20
+        }
+    },
+    "biomes": [
+        {
+            "name": "snow_peaks",
+            "height_bounds": { "min": 14, "max": 1000 },
+            "surface_color": { "r": 240, "g": 240, "b": 240 }
+        },
+        {
+            "name": "rocks",
+            "height_bounds": { "min": 5, "max": 15 },
+            "slope_bounds": { "min": 60, "max": 90 },
+            "surface_color": { "r": 150, "g": 150, "b": 150 }
+        },
+        {
+            "name": "mountains",
+            "height_bounds": { "min": 7, "max": 14 },
+            "surface_color": { "r": 170, "g": 130, "b": 90 }
+        },
+        {
+            "name": "foothills",
+            "height_bounds": { "min": 3, "max": 7 },
+            "surface_color": { "r": 140, "g": 170, "b": 60 }
+        },
+        {
+            "name": "plain",
+            "height_bounds": { "min": 0.5, "max": 3 },
+            "surface_color": { "r": 60, "g": 160, "b": 70 }
+        },
+        {
+            "name": "sand_beach",
+            "height_bounds": { "min": 0, "max": 0.5 },
+            "slope_bounds": { "min": 0, "max": 10 },
+            "surface_color": { "r": 250, "g": 230, "b": 150 }
+        },
+        {
+            "name": "coast",
+            "height_bounds": { "min": 0, "max": 0.5 },
+            "slope_bounds": { "min": 10, "max": 40 },
+            "surface_color": { "r": 150, "g": 170, "b": 120 }
+        },
+        {
+            "name": "cliff_coast",
+            "height_bounds": { "min": 0, "max": 0.5 },
+            "slope_bounds": { "min": 40, "max": 90 },
+            "surface_color": { "r": 230, "g": 230, "b": 230 }
+        },
+        {
+            "name": "sea",
+            "height_bounds": { "min": -1000, "max": 0 },
+            "surface_color": { "r": 50, "g": 190, "b": 210 },
+            "water": true
+        },
+        {
+            "name": "failed_realm",
+            "height_bounds": { "min": -1000, "max": 1000 },
+            "slope_bounds": { "min": -1000, "max": 1000 },
+            "surface_color": { "r": 255, "g": 0, "b": 255 }
+        }
+    ]
+}
