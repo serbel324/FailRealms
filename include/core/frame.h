@@ -9,9 +9,7 @@
 #include <SFML/Graphics.hpp>
 
 namespace REngine {
-std::shared_ptr<sf::RenderWindow> MakeGenericWindow(Vec2i dimensions, std::string name = "App") {
-    return std::make_shared<sf::RenderWindow>(sf::VideoMode(dimensions.x, dimensions.y), name, sf::Style::Close);
-}
+std::shared_ptr<sf::RenderWindow> MakeGenericWindow(Vec2i dimensions, std::string name = "App");
 
 class Frame {
 public:

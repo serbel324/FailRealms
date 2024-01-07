@@ -1,6 +1,8 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
+#include <functional>
 #include <vector>
 
 #include <library/vec2.h>
@@ -17,15 +19,30 @@ using ExtMath::Bounds;
 
 class World {
 public:
+    enum class Layer {
+        SURFACE = 0,
+        TEMPERATURE,
+        HUMIDITY,
+    };
+
+public:
     struct Settings {
 
         struct Biome {
+            enum class SurfaceType {
+                NORMAL = 0,
+                WATER,
+                ICE,
+            };
             std::string name = "TabulaRasa";
             // Terrain
             Bounds<double> heightBounds{-10000, 10000};
             Bounds<double> slopeBounds{0, 90};
 
-            bool water = false;
+            Bounds<double> temperatureBounds{-278, 5000};
+            Bounds<double> humidityBounds{-1000, 1000};
+
+            SurfaceType surfaceType = SurfaceType::NORMAL;
 
             // Surface
             double surfaceAlbedo = 1;
@@ -39,11 +56,13 @@ public:
             double phase = 0;
         };
     
-        double dayDuration;
+        double dayDuration = 4000;
         Vec2u worldSize = Vec2u{100, 100};
+        double islandSize = 1.5;
 
         PerlinNoise::Settings heightNoiseSettings;
         PerlinNoise::Settings temperatureNoiseSettings;
+        PerlinNoise::Settings humidityNoiseSettings;
 
         std::vector<LightSource> lightSources;
         std::vector<Biome> biomes;
@@ -52,21 +71,26 @@ public:
 public:
     World();
 
-    void Generate(Settings settings);
+    void Generate(const Settings& settings);
+    void Regenerate();
     void Render(Graphics* gr, Vec2u windowSize);
     void Tick(double dtime);
 
+    void SetRenderedLayer(Layer layer);
+
 private:
     double GetHeight(uint32_t x, uint32_t y) {
-        return _heightMap[y][x];
+        return _map[y][x].height;
     }
 
     Vec3d GetNormal(uint32_t x, uint32_t y) {
-        Vec3d p(x, y, _heightMap[y][x]);
-        Vec3d p10(x + 1, y, _heightMap[y][x + 1]);
-        Vec3d p01(x, y + 1, _heightMap[y + 1][x]);
+        Vec3d p(x, y, GetHeight(x, y));
+        Vec3d p10(x + 1, y, GetHeight(x + 1, y));
+        Vec3d p01(x, y + 1, GetHeight(x, y + 1));
         return cross_prod(p10 - p, p01 - p).normalized();
     }
+
+    Layer _renderedLayer = Layer::SURFACE;
 
     double _time = 0;
     Settings _settings;
@@ -82,11 +106,17 @@ private:
 
     Vec2u _size;
 
-    std::vector<std::vector<double>> _heightMap;
-    std::vector<std::vector<double>> _temperatureMap;
-    std::vector<std::vector<Vec3d>> _normalMap;
-    std::vector<std::vector<uint32_t>> _biomeMap;
+    struct Cell {
+        double height;
+        double temperature;
+        double humidity;
+        Vec3d normal;
+        uint32_t biome;
+    };
+
+    std::vector<std::vector<Cell>> _map;
 
     PerlinNoise _heightNoise;
     PerlinNoise _temperatureNoise;
+    PerlinNoise _humidityNoise;
 };

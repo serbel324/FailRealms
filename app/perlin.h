@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <functional>
 #include <vector>
 
 #include <library/vec2.h>
@@ -11,7 +12,9 @@ public:
     struct Settings {
         uint32_t depth = 5;
         uint32_t baseGridResolution = 8;
-        std::function<double(uint32_t)> amplitudeGenerator = [](uint32_t) { return 1; };
+        std::function<double(uint32_t)> amplitudeGenerator = [=](uint32_t x) {
+            return std::pow(2, depth - 1 - x) * 2;
+        };
         std::function<double(double)> transformerFunction = [](double x) { return x; };
     };
 

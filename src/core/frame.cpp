@@ -2,6 +2,10 @@
 
 namespace REngine {
 
+std::shared_ptr<sf::RenderWindow> MakeGenericWindow(Vec2i dimensions, std::string name) {
+    return std::make_shared<sf::RenderWindow>(sf::VideoMode(dimensions.x, dimensions.y), name, sf::Style::Close);
+}
+
 Frame::Frame(Frame::Settings settings, Frame* parent, std::shared_ptr<sf::RenderWindow> window)
     : _settings(std::move(settings))
     , _parent(parent)

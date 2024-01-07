@@ -7,9 +7,15 @@ void InputController::HandleEvent(sf::Event event) {
     {
     case sf::Event::KeyPressed:
         KeyPressed(event.key);
+        if (keyPressedCallback) {
+            keyPressedCallback(event.key.code);
+        }
         break;
     case sf::Event::KeyReleased:
         KeyReleased(event.key);
+        if (keyReleasedCallback) {
+            keyReleasedCallback(event.key.code);
+        }
         break;
     case sf::Event::MouseButtonPressed:
         MousePressed(event.mouseButton);

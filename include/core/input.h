@@ -12,9 +12,14 @@ public:
     bool space;
     Vec2<float> mousePosition;
 
+    using KeyboardInputCallback = std::function<void(const sf::Keyboard::Key&)>;
+
+    KeyboardInputCallback keyPressedCallback; 
+    KeyboardInputCallback keyReleasedCallback;
+
 public:
     void HandleEvent(sf::Event event);
-    
+
     void KeyPressed(sf::Event::KeyEvent& e);
     void KeyReleased(sf::Event::KeyEvent& e);
     void MouseMoved(sf::Event::MouseMoveEvent& e);

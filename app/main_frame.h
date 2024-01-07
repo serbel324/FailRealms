@@ -26,9 +26,42 @@ public:
 
     void Initialize() override {
         std::cout << "Init" << std::endl;
-        std::ifstream f("world_settings.json");
-        World::Settings worldSettings = ParseConfig(nlohmann::json::parse(f));
-        _world.Generate(worldSettings);
+        _world.Generate(ParseConfigFromFile("world_settings.json"));
+
+        Ic()->keyPressedCallback = [&](const sf::Keyboard::Key& key) {
+            switch (key) {
+            case sf::Keyboard::S:
+                _world.SetRenderedLayer(World::Layer::SURFACE);
+                break;
+            case sf::Keyboard::T:
+                _world.SetRenderedLayer(World::Layer::TEMPERATURE);
+                break;
+            case sf::Keyboard::H:
+                _world.SetRenderedLayer(World::Layer::HUMIDITY);
+                break;
+            case sf::Keyboard::Space:
+                _world.Generate(ParseConfigFromFile("world_settings.json"));
+                break;
+            default:
+                break;
+            }
+        };
+
+        Ic()->keyReleasedCallback = [&](const sf::Keyboard::Key& key) {
+            switch (key) {
+            case sf::Keyboard::S:
+                _world.SetRenderedLayer(World::Layer::SURFACE);
+                break;
+            case sf::Keyboard::T:
+                _world.SetRenderedLayer(World::Layer::SURFACE);
+                break;
+            case sf::Keyboard::H:
+                _world.SetRenderedLayer(World::Layer::SURFACE);
+                break;
+            default:
+                break;
+            }
+        };
     }
 
     bool Update(float elapsedMs) override {

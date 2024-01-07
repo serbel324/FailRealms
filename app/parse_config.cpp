@@ -1,12 +1,14 @@
 #include "parse_config.h"
 #include <library/ext_math.h>
 #include <nlohmann/json.hpp>
+#include <fstream>
 
+using Json = nlohmann::json;
 using Biome = World::Settings::Biome;
 using LightSource = World::Settings::Biome;
+
 using namespace REngine;
 using namespace ExtMath;
-
 
 #define GET_IF_PRESENT(var, name) if (json.contains(name)) { var = json[name]; }
 #define PARSE_IF_PRESENT(var, name) if (json.contains(name)) { Parse(var, json[name]); }
@@ -47,10 +49,19 @@ template<>
 void Parse(Biome& var, const Json& json) {
     GET_IF_PRESENT(var.name, "name")
     PARSE_IF_PRESENT(var.heightBounds, "height_bounds")
+    PARSE_IF_PRESENT(var.humidityBounds, "humidity_bounds")
+    PARSE_IF_PRESENT(var.temperatureBounds, "temperature_bounds")
     GET_IF_PRESENT(var.surfaceAlbedo, "surface_albedo")
     PARSE_IF_PRESENT(var.surfaceColor, "surface_color")
     PARSE_IF_PRESENT(var.slopeBounds, "slope_bounds")
-    GET_IF_PRESENT(var.water, "water")
+
+    std::string type = "normal";
+    GET_IF_PRESENT(type, "surface_type")
+    if (type == "water") {
+        var.surfaceType = Biome::SurfaceType::WATER;
+    } else if (type == "ice") {
+        var.surfaceType = Biome::SurfaceType::ICE;
+    }
 }
 
 template<>
@@ -88,7 +99,7 @@ void ParseNoiseTransformer(Callback& callback, const Json& json) {
         };
     } else {
         callback = [=](double x) {
-            return ExtMath::ModuleStepFunction(x * variable_amplifier) * magnitude + base;
+            return x * magnitude + base;
         };
     }
 }
@@ -112,6 +123,7 @@ Config ParseConfig(const Json& json) {
     GET_IF_PRESENT(settings.dayDuration, "day_duration")
     PARSE_IF_PRESENT(settings.heightNoiseSettings, "height_noise")
     PARSE_IF_PRESENT(settings.temperatureNoiseSettings, "temperature_noise")
+    PARSE_IF_PRESENT(settings.humidityNoiseSettings, "humidity_noise")
 
     for (const auto& b : json["biomes"]) {
         Biome biome;
@@ -121,6 +133,11 @@ Config ParseConfig(const Json& json) {
     assert(!settings.biomes.empty());
 
     return settings;
+}
+
+Config ParseConfigFromFile(const std::string& path) {
+    std::ifstream f(path);
+    return ParseConfig(Json::parse(f));
 }
 
 #undef GET_IF_PRESENT

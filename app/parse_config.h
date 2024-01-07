@@ -1,8 +1,6 @@
 #include "world.h"
+#include <string>
 
-#include <nlohmann/json.hpp>
-
-using Json = nlohmann::json;
 using Config = World::Settings;
 
-Config ParseConfig(const Json& json);
+Config ParseConfigFromFile(const std::string& path);
