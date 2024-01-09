@@ -119,4 +119,7 @@ private:
     PerlinNoise _heightNoise;
     PerlinNoise _temperatureNoise;
     PerlinNoise _humidityNoise;
+
+
+    sf::Texture _tex;
 };

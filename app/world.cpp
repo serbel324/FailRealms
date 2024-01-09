@@ -8,11 +8,11 @@ World::World()
 
 void World::Regenerate() {
     std::cout << "Generate" << std::endl;
-    {
-        _heightNoise.Generate(_settings.heightNoiseSettings);
-        _temperatureNoise.Generate(_settings.temperatureNoiseSettings);
-        _humidityNoise.Generate(_settings.humidityNoiseSettings);
-    }
+    _tex.create(_settings.worldSize.x, _settings.worldSize.y);
+
+    _heightNoise.Generate(_settings.heightNoiseSettings);
+    _temperatureNoise.Generate(_settings.temperatureNoiseSettings);
+    _humidityNoise.Generate(_settings.humidityNoiseSettings);
 
     _map.assign(_settings.worldSize.y + 1, std::vector<Cell>(_settings.worldSize.x + 1));
     // heights
@@ -125,7 +125,7 @@ void World::Render(Graphics* gr, Vec2<uint32_t> windowSize) {
             }
             case Layer::HUMIDITY: {
                 double t = cell.humidity / 100 * 255;
-                fillColor = Color(255 - t, 255, 255);
+                fillColor = Color(255 - t, 255 - t, 255);
                 break;
             }
             }
@@ -135,11 +135,10 @@ void World::Render(Graphics* gr, Vec2<uint32_t> windowSize) {
             imageTerrain.setPixel(x, y, sf::Color(fillColor.r, fillColor.g, fillColor.b));
         }
     }
-    sf::Texture tex;
-    tex.create(_settings.worldSize.x, _settings.worldSize.y);
-    tex.update(imageTerrain);
+    
+    _tex.update(imageTerrain);
 
-    gr->DrawTexture(tex, windowSize * 0.5, windowSize);
+    gr->DrawTexture(_tex, windowSize * 0.5, windowSize);
 }
 
 void World::Tick(double elapsedMs) {
