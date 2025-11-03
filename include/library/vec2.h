@@ -77,7 +77,8 @@ struct Vec2
 };
 
 using Vec2i = Vec2<int>;
-using Vec2u = Vec2<uint32_t>;
+using Vec2ui32 = Vec2<uint32_t>;
+using Vec2ui64 = Vec2<uint64_t>;
 using Vec2f = Vec2<float>;
 using Vec2d = Vec2<double>;
 
@@ -207,7 +208,9 @@ template<typename T1, typename F1>
 template<typename T2, typename F2>
 Vec2<T1, F1>& Vec2<T1, F1>::operator-=(Vec2<T2, F2> r)
 {
-    return *this += -r;
+    x -= r.x;
+    y -= r.y;
+    return *this;
 }
 
 template<typename T1, typename F1>
@@ -299,7 +302,9 @@ template<typename T, typename F>
 template<typename T1>
 Vec2<T, F>& Vec2<T, F>::operator/=(T1 r)
 {
-    return *this *= 1 / r;
+    x /= r;
+    y /= r;
+    return *this;
 }
 
 template<typename T, typename F>
@@ -370,3 +375,12 @@ bool check_parallel(const Vec2<T, F>& a, const Vec2<T, F>& b)
 
     return (std::abs(cross_prod(a, b) / aabs / babs) < Vec2<T, F>::EPS);
 }
+
+template <typename T, typename F>
+struct std::hash<Vec2<T, F>>
+{
+    std::size_t operator()(const Vec2<T, F>& vec) const
+    {
+        return std::hash<T>()(vec.x) ^ std::hash<T>()(vec.y);
+    }
+};

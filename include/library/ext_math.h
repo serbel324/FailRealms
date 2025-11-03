@@ -10,7 +10,8 @@
 
 namespace ExtMath {
 
-extern const long double PI;
+constexpr long double PI = 3.14159265359;
+constexpr long double EPS = 1e-9;
 
 double ToRadian(double a);
 
@@ -33,23 +34,11 @@ double RandomDouble(double a, double b);
 int RandomInt(int a, int b);
 
 double Interpolate(double a0, double a1, double p);
+
 double Smootherstep(double a0, double a1, double p);
 
-//   Interpolate values in square's corners and point inside the square
-//
-//   ^ y
-//   |  p01          p11
-// 1 -   * ---------- * 
-//   |   |            |
-//   |   |         <------- p=(x, y) in [0, 1]x[0, 1]
-//   |   |            |
-//   |   |            |
-// 0 -   * ---------- * 
-//   |  p00          p10
-// --|---|------------|----------> x
-//   |   0            1
-// 
 double InterpolateSquare(double p00, double p10, double p01, double p11, Vec2<double> p);
+
 double SmootherstepSquare(double p00, double p10, double p01, double p11, Vec2<double> p);
 
 template<typename T = double>
@@ -74,7 +63,7 @@ struct Bounds {
     T min = -1e9;
     T max = 1e9;
 
-    bool Contain(T x) const {
+    bool Contains(T x) const {
         return x >= min && x <= max;
     }
 };

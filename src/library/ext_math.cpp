@@ -1,8 +1,12 @@
+#include <cstdlib>
+#include <random>
+#include <cmath>
+#include <ctime>
+#include <climits>
+
 #include <library/ext_math.h>
 
 namespace ExtMath {
-
-const long double PI = 3.14159265359;
 
 double ToRadian(double a)
 {

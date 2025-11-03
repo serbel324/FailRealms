@@ -21,9 +21,9 @@ public:
 private:
     struct PerlinLayer {
         std::vector<std::vector<Vec2d>> gradients;
-        Vec2u gridSize;
+        Vec2ui32 gridSize;
 
-        void Generate(Vec2u size) {
+        void Generate(Vec2ui32 size) {
             gridSize = size;
             gradients.assign(size.y + 2, std::vector<Vec2d>(size.x + 2, Vec2d(0, 0)));
             for (uint32_t y = 0; y < size.y + 1; ++y) {

@@ -1,25 +1,31 @@
 #pragma once
 
+#include <atomic>
 #include <algorithm>
 #include <cassert>
 #include <functional>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 #include <library/vec2.h>
 #include <library/vec3.h>
 #include <library/ext_math.h>
 
+#include <SFML/Graphics.hpp>
+
 #include "perlin.h"
 
-#include <core/color.h>
-#include <core/graphics.h>
+#include <rengine/core/color.h>
+#include <rengine/core/graphics.h>
+#include <rengine/sfml_implementation/sfml_graphics.h>
 
 using namespace REngine;
 using ExtMath::Bounds;
 
 class World {
 public:
-    enum class Layer {
+    enum class Layer : uint32_t {
         SURFACE = 0,
         TEMPERATURE,
         HUMIDITY,
@@ -57,7 +63,7 @@ public:
         };
     
         double dayDuration = 4000;
-        Vec2u worldSize = Vec2u{100, 100};
+        Vec2ui32 worldSize = Vec2ui32{100, 100};
         double islandSize = 1.5;
 
         PerlinNoise::Settings heightNoiseSettings;
@@ -73,8 +79,7 @@ public:
 
     void Generate(const Settings& settings);
     void Regenerate();
-    void Render(Graphics* gr, Vec2u windowSize);
-    void Tick(double dtime);
+    void TickAndRender(double elapsedMs, REngine::SFMLGraphics* gr, Vec2ui32 windowSize);
 
     void SetRenderedLayer(Layer layer);
 
@@ -90,6 +95,8 @@ private:
         return cross_prod(p10 - p, p01 - p).normalized();
     }
 
+    void UpdateVertexArray(uint32_t y);
+
     Layer _renderedLayer = Layer::SURFACE;
 
     double _time = 0;
@@ -104,7 +111,7 @@ private:
     double _moonBrightness = 0.2;
     double _starBrightness = 0.1;
 
-    Vec2u _size;
+    Vec2ui32 _size;
 
     struct Cell {
         double height;
@@ -120,6 +127,25 @@ private:
     PerlinNoise _temperatureNoise;
     PerlinNoise _humidityNoise;
 
+    sf::VertexArray _vertexArray;
 
-    sf::Texture _tex;
+public:
+    struct WorldWorker;
+
+private:
+    static constexpr uint32_t MAX_WORKERS = 32;
+    void StartWorkers();
+
+    [[nodiscard]] std::vector<std::unique_lock<std::mutex>> Blockade();
+
+    // workers
+    uint32_t _numWorkers;
+    std::vector<std::thread> _workers;
+    std::array<std::mutex, MAX_WORKERS> _mutex;
+
+    uint32_t _stripe_size = 10;
+    uint32_t _stripe_count;
+
+    std::atomic<uint64_t> _stripe;
+    std::atomic<uint64_t> _stripes_done;
 };

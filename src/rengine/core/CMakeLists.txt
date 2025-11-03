@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.18)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 
 set(INCPATH
     ${PROJECT_SOURCE_DIR}/include)
 
-project(Core)
+project(REngineCore)
 
 set(SOURCES
     camera.cpp
     color.cpp
-    graphics.cpp
+    driver.cpp
     frame.cpp
     input.cpp)
 

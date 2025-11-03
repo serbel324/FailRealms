@@ -12,6 +12,9 @@ set(SOURCES
     world.cpp
 )
 
+# add_link_options(-fsanitize=address)
+# add_compile_options(-fsanitize=address)
+
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories( ${PROJECT_NAME}
@@ -20,7 +23,7 @@ target_include_directories( ${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    Driver
-    Core
     Library
+    REngineCore
+    REngineSFMLImplementation
 )

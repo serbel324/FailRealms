@@ -1,5 +1,4 @@
-#include <core/frame.h>
-#include <core/color.h>
+#include <rengine/sfml_implementation/sfml_frame.h>
 #include <library/vec2.h>
 
 #include "world.h"
@@ -9,72 +8,49 @@
 
 using namespace REngine;
 
-const Vec2i _worldSize{300, 300};
-const Vec2i _screenSize{800, 800};
+const Vec2i _screenSize{1500, 1500};
 
-class MainFrame : public Frame {
+class MainFrame : public SFMLFrame {
 public:
     MainFrame()
-        : Frame(
+        : SFMLFrame(
             Frame::Settings{
-                .id = "MainFrame",
-                .screenSize = _screenSize,
-            },
-            nullptr,
-            MakeGenericWindow(_screenSize, "Demo app"))
+                .screen_size = _screenSize,
+                .window_name = "MainFrame",
+            })
     {}
+
+    void RegenerateWorld() {
+        _world.Generate(ParseConfigFromFile("world_settings.json"));
+    }
 
     void Initialize() override {
         std::cout << "Init" << std::endl;
-        _world.Generate(ParseConfigFromFile("world_settings.json"));
-
-        Ic()->keyPressedCallback = [&](const sf::Keyboard::Key& key) {
-            switch (key) {
-            case sf::Keyboard::S:
-                _world.SetRenderedLayer(World::Layer::SURFACE);
-                break;
-            case sf::Keyboard::T:
-                _world.SetRenderedLayer(World::Layer::TEMPERATURE);
-                break;
-            case sf::Keyboard::H:
-                _world.SetRenderedLayer(World::Layer::HUMIDITY);
-                break;
-            case sf::Keyboard::Space:
-                _world.Generate(ParseConfigFromFile("world_settings.json"));
-                break;
-            default:
-                break;
-            }
-        };
-
-        Ic()->keyReleasedCallback = [&](const sf::Keyboard::Key& key) {
-            switch (key) {
-            case sf::Keyboard::S:
-                _world.SetRenderedLayer(World::Layer::SURFACE);
-                break;
-            case sf::Keyboard::T:
-                _world.SetRenderedLayer(World::Layer::SURFACE);
-                break;
-            case sf::Keyboard::H:
-                _world.SetRenderedLayer(World::Layer::SURFACE);
-                break;
-            default:
-                break;
-            }
-        };
+        Frame::Initialize();
+        RegenerateWorld();
     }
 
-    bool Update(float elapsedMs) override {
-        _world.Tick(elapsedMs);
-        return Frame::Update(elapsedMs);
+    void Input() {
+        if (Ic()->IsKeyDown(KeyCode::kSpace)) {
+            _world.Regenerate();
+        }
+        if (Ic()->IsKeyDown(KeyCode::kT)) {
+            _world.SetRenderedLayer(World::Layer::TEMPERATURE);
+        }
+        if (Ic()->IsKeyDown(KeyCode::kH)) {
+            _world.SetRenderedLayer(World::Layer::HUMIDITY);
+        }
+        if (Ic()->IsKeyDown(KeyCode::kS)) {
+            _world.SetRenderedLayer(World::Layer::SURFACE);
+        }
     }
 
-    void Render() override {
-        Gr()->SetFillColor(REngine::Color::WHITE);
-        Gr()->Fill();
-
-        _world.Render(Gr(), _screenSize);
+    bool Update(float elapsedSec) override {
+        Gr()->Fill(REngine::Color::WHITE);
+        Input();
+        _world.TickAndRender(elapsedSec * 1000, GetGraphics<SFMLGraphics>(), _screenSize);
         Frame::Render();
+        return Frame::Update(elapsedSec * 1000);
     }
 
 private:

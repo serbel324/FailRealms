@@ -1,14 +1,49 @@
 #include "world.h"
 
+#include <chrono>
+#include <sstream>
 #include <set>
 
 World::World()
-    : _time(0) 
-{}
+    : _time(0)
+    , _numWorkers(std::thread::hardware_concurrency() - 1)
+{
+    _stripe.store(1'000'000'000);
+}
+
+struct World::WorldWorker {
+    uint32_t idx;
+    World* world;
+
+    WorldWorker(uint32_t idx_, World* world_)
+        : idx(idx_)
+        , world(world_)
+    {}
+
+    void operator()() {
+        while (true) {
+            uint64_t stripe = world->_stripe.fetch_add(1);
+            std::unique_lock<std::mutex> lock(world->_mutex[idx]);
+            if (stripe < world->_stripe_count) {
+                world->UpdateVertexArray(stripe);
+                world->_stripes_done.fetch_add(1);
+            }
+        }
+    }
+};
+
+void World::StartWorkers() {
+    _workers.clear();
+    _workers.reserve(_numWorkers);
+    for (uint32_t i = 0; i < _numWorkers; ++i) {
+        _workers.push_back(std::thread(WorldWorker(i, this)));
+    }
+}
 
 void World::Regenerate() {
     std::cout << "Generate" << std::endl;
-    _tex.create(_settings.worldSize.x, _settings.worldSize.y);
+
+    auto g = Blockade();
 
     _heightNoise.Generate(_settings.heightNoiseSettings);
     _temperatureNoise.Generate(_settings.temperatureNoiseSettings);
@@ -44,16 +79,16 @@ void World::Regenerate() {
             std::vector<uint32_t> candidates;
             for (uint32_t i = 0; i < _settings.biomes.size(); ++i) {
                 const auto& candidate = _settings.biomes[i];
-                if (!candidate.heightBounds.Contain(cell.height)) {
+                if (!candidate.heightBounds.Contains(cell.height)) {
                     continue;
                 }
-                if (!candidate.slopeBounds.Contain(slope)) {
+                if (!candidate.slopeBounds.Contains(slope)) {
                     continue;
                 }
-                if (!candidate.humidityBounds.Contain(cell.humidity)) {
+                if (!candidate.humidityBounds.Contains(cell.humidity)) {
                     continue;
                 }
-                if (!candidate.temperatureBounds.Contain(cell.temperature)) {
+                if (!candidate.temperatureBounds.Contains(cell.temperature)) {
                     continue;
                 }
                 candidates.push_back(i);
@@ -66,13 +101,20 @@ void World::Regenerate() {
 
 void World::Generate(const Settings& settings) {
     _settings = settings;
+    _vertexArray.clear();
+    _vertexArray.setPrimitiveType(sf::Points);
+    _vertexArray.resize(_settings.worldSize.x * _settings.worldSize.y);
+    
+    _stripe_size = 5;
+    _stripe_count = _settings.worldSize.y / _stripe_size;
     Regenerate();
+    StartWorkers();
 }
 
-void World::Render(Graphics* gr, Vec2<uint32_t> windowSize) {
-    sf::Image imageTerrain;
-    imageTerrain.create(_settings.worldSize.x, _settings.worldSize.y, sf::Color::Red);
-    for (uint32_t y = 0; y < _settings.worldSize.y; ++y) {
+void World::UpdateVertexArray(uint32_t stripe) {
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    for (uint32_t y = _stripe_size * stripe; y < _stripe_size * (stripe + 1) && y < _settings.worldSize.y; ++y) {
         for (uint32_t x = 0; x < _settings.worldSize.x; ++x) {
             auto& cell = _map[y][x];
             Color fillColor;
@@ -131,17 +173,25 @@ void World::Render(Graphics* gr, Vec2<uint32_t> windowSize) {
             }
 
             // fillColor = Color(1, 1, 1) * (cell.humidity / 100 * 255);
+            uint32_t index = y * _settings.worldSize.x + x;
+            float fx = static_cast<float>(x);
+            float fy = static_cast<float>(y);
 
-            imageTerrain.setPixel(x, y, sf::Color(fillColor.r, fillColor.g, fillColor.b));
+            _vertexArray[index].position = sf::Vector2f{fx, fy};
+            _vertexArray[index].color = sf::Color(fillColor.r, fillColor.g, fillColor.b);
         }
     }
-    
-    _tex.update(imageTerrain);
+    auto t2 = std::chrono::high_resolution_clock::now();
 
-    gr->DrawTexture(_tex, windowSize * 0.5, windowSize);
+    // std::stringstream ss;
+    // ss << "Stripe time: " << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << "ms" << std::endl;
+    // std::cout << ss.str();
 }
 
-void World::Tick(double elapsedMs) {
+void World::TickAndRender(double elapsedMs, REngine::SFMLGraphics* gr, Vec2<uint32_t> windowSize) {
+    std::cout << elapsedMs << std::endl;
+
+    // tick
     _time += elapsedMs;
     if (_time >= _settings.dayDuration) {
         _time -= _settings.dayDuration;
@@ -149,8 +199,27 @@ void World::Tick(double elapsedMs) {
     double a = (_time / _settings.dayDuration + 0.5) * 2 * ExtMath::PI;
     _sunLight = Vec3d(0, std::sin(a), std::cos(a));
     _moonLight = Vec3d(0, std::sin(a + ExtMath::PI), std::cos(a + ExtMath::PI));
+
+    // render
+    _stripes_done.store(0);
+    _stripe.store(0);
+    
+    while (_stripes_done.load() < _stripe_count) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    gr->RenderVertexArray(_vertexArray);
 }
 
 void World::SetRenderedLayer(Layer layer) {
     _renderedLayer = layer;
+}
+
+std::vector<std::unique_lock<std::mutex>> World::Blockade() {
+    std::vector<std::unique_lock<std::mutex>> locks;
+    locks.reserve(_numWorkers);
+    for (uint32_t i = 0; i < _numWorkers; ++i) {
+        locks.push_back(std::unique_lock<std::mutex>(_mutex[i]));
+    }
+    return locks;
 }
